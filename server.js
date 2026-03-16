@@ -1,11 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./config/database');
+require('dotenv').config();
 const portfolioRoutes = require('./routes/portfolioRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 5000; // Using 5000 for backend
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors());
@@ -21,9 +21,8 @@ app.get('/health', (req, res) => {
 
 // Start Server and Connect DB
 const startServer = async () => {
-  await connectDB();
   app.listen(PORT, () => {
-    console.log(`Backend Server is running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
     console.log(`API is available at /api/`);
   });
 };

@@ -44,10 +44,10 @@ const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/portfolioDB
 
 const sqliteDB = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error('❌ Error opening SQLite database:', err.message);
+    console.error('Error opening SQLite database:', err.message);
     process.exit(1);
   }
-  console.log('✅ Connected to SQLite database.');
+  console.log('Connected to SQLite database.');
 });
 
 // Helper function to turn SQLite queries into modern Promises
@@ -68,7 +68,7 @@ const migrateData = async () => {
     // Connect to MongoDB
     console.log(`Connecting to MongoDB at ${mongoURI}...`);
     await mongoose.connect(mongoURI);
-    console.log('✅ Connected to MongoDB.');
+    console.log(' Connected to MongoDB.');
 
     // Clear existing collections safely
     console.log('Clearing old collections to prepare for fresh migration...');
@@ -85,7 +85,7 @@ const migrateData = async () => {
       totalInvested: c.total_invested
     }));
     if (mongoClients.length > 0) await Client.insertMany(mongoClients);
-    console.log(`✅ Migrated ${mongoClients.length} rows to 'clients' collection.`);
+    console.log(` Migrated ${mongoClients.length} rows to 'clients' collection.`);
 
     // -- Migrate Holdings --
     const sqHoldings = await querySQLite('SELECT * FROM client_holdings');
@@ -96,7 +96,7 @@ const migrateData = async () => {
       currentValue: h.current_value
     }));
     if (mongoHoldings.length > 0) await Holding.insertMany(mongoHoldings);
-    console.log(`✅ Migrated ${mongoHoldings.length} rows to 'holdings' collection.`);
+    console.log(` Migrated ${mongoHoldings.length} rows to 'holdings' collection.`);
 
     // -- Migrate Funds & Model Portfolio --
     // Both of these logically derive from the SQLite 'model_funds' table depending on your initial architecture
@@ -108,7 +108,7 @@ const migrateData = async () => {
       assetClass: f.asset_class
     }));
     if (mongoFunds.length > 0) await Fund.insertMany(mongoFunds);
-    console.log(`✅ Migrated ${mongoFunds.length} rows to 'funds' collection.`);
+    console.log(` Migrated ${mongoFunds.length} rows to 'funds' collection.`);
 
     const mongoModelPortfolio = sqModelFunds.map(f => ({
       fundId: f.fund_id,
@@ -116,12 +116,12 @@ const migrateData = async () => {
       allocationPct: f.allocation_pct
     }));
     if (mongoModelPortfolio.length > 0) await ModelPortfolio.insertMany(mongoModelPortfolio);
-    console.log(`✅ Migrated ${mongoModelPortfolio.length} rows to 'modelPortfolio' collection.`);
+    console.log(`Migrated ${mongoModelPortfolio.length} rows to 'modelPortfolio' collection.`);
 
     console.log('\n All Data Migration Completed Successfully!\n');
 
   } catch (error) {
-    console.error('❌ Migration failed:', error);
+    console.error(' Migration failed:', error);
   } finally {
     // 4. Close Both Connections
     console.log('Closing database connections...');

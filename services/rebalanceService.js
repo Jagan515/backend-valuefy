@@ -7,8 +7,9 @@
  * @param {number} totalPortfolioValue - Total value of all current holdings
  * @returns {Array} List of actions: [{ fund: "Equity", action: "SELL", amount: 20000 }]
  */
-function calculateRebalanceActions(currentHoldings, modelPortfolio, totalPortfolioValue) {
+function calculateRebalanceActions(currentHoldings, modelPortfolio, totalPortfolioValue, newInvestment = 0) {
 
+  const totalCapital = totalPortfolioValue + newInvestment;
   const holdingsMap = {};
   currentHoldings.forEach(h => {
     holdingsMap[h.fundId] = h;
@@ -26,11 +27,7 @@ function calculateRebalanceActions(currentHoldings, modelPortfolio, totalPortfol
     modelMap[m.fundId] = m;
   });
 
-  // 5% rebalance threshold
-  const threshold = totalPortfolioValue * 0.05;
-
   allFundIds.forEach(fundId => {
-
     const holding = holdingsMap[fundId];
     const target = modelMap[fundId];
 
@@ -38,29 +35,36 @@ function calculateRebalanceActions(currentHoldings, modelPortfolio, totalPortfol
     const allocationPct = target ? target.allocationPct : 0;
     const fundName = target ? target.fundName : holding.fundName;
 
-    const targetValue = totalPortfolioValue * (allocationPct / 100);
-    const difference = targetValue - currentValue;
-
-    // Ignore floating point differences
-    if (Math.abs(difference) < 0.01) return;
-
-    // Ignore small drifts below threshold
-    if (Math.abs(difference) < threshold) return;
-
-    if (difference > 0) {
+    // Handle funds NOT in the model portfolio
+    if (!target) {
       actions.push({
+        fundId,
         fund: fundName,
-        action: 'BUY',
-        amount: Number(difference.toFixed(2))
+        action: 'REVIEW',
+        amount: currentValue,
+        currentPct: Number(((currentValue / totalPortfolioValue) * 100).toFixed(2)),
+        targetPct: 0,
+        postRebalancePct: 0, // After liquidation/liquidity use
+        isModelFund: false
       });
-    } else {
-      actions.push({
-        fund: fundName,
-        action: 'SELL',
-        amount: Number(Math.abs(difference).toFixed(2))
-      });
+      return;
     }
 
+    const targetValue = totalCapital * (allocationPct / 100);
+    const difference = targetValue - currentValue;
+    const currentPct = (currentValue / totalPortfolioValue) * 100;
+
+    // We include all model funds in the response, even if drift is 0
+    actions.push({
+      fundId,
+      fund: fundName,
+      action: difference > 0 ? 'BUY' : (difference < 0 ? 'SELL' : 'NONE'),
+      amount: Number(Math.abs(difference).toFixed(2)),
+      currentPct: Number(currentPct.toFixed(2)),
+      targetPct: allocationPct,
+      postRebalancePct: allocationPct, // Assuming perfect rebalance
+      isModelFund: true
+    });
   });
 
   return actions;
