@@ -108,6 +108,38 @@ class PortfolioController {
       res.status(500).json({ success: false, error: 'Failed to calculate rebalance actions' });
     }
   }
+
+  /**
+   * GET /api/rebalance-summary
+   * Fetches a summary of all clients and their rebalance status.
+   */
+  async getRebalanceSummary(req, res) {
+    try {
+      const clients = await portfolioRepository.getAllClients();
+      const modelPortfolio = await portfolioRepository.getModelPortfolio();
+
+      const summary = await Promise.all(clients.map(async (client) => {
+        const holdings = await portfolioRepository.getClientHoldings(client.clientId);
+        const totalValue = holdings.reduce((sum, h) => sum + h.currentValue, 0);
+        
+        const actions = calculateRebalanceActions(holdings, modelPortfolio, totalValue);
+        
+        return {
+          clientId: client.clientId,
+          name: client.name,
+          totalInvested: client.totalInvested,
+          currentValue: totalValue,
+          status: actions.length > 0 ? 'Drifted' : 'Balanced',
+          actionCount: actions.length
+        };
+      }));
+
+      res.status(200).json({ success: true, data: summary });
+    } catch (error) {
+      console.error('Error in getRebalanceSummary:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch rebalance summary' });
+    }
+  }
 }
 
 module.exports = new PortfolioController();

@@ -9,6 +9,9 @@ router.get('/clients', portfolioController.getClients.bind(portfolioController))
 // Fetch current holdings for a single client
 router.get('/portfolio/:clientId', portfolioController.getClientPortfolio.bind(portfolioController));
 
+// Get summary status for all clients
+router.get('/rebalance-summary', portfolioController.getRebalanceSummary.bind(portfolioController));
+
 // Calculate required rebalance actions for a single client
 router.get('/rebalance/:clientId', portfolioController.calculateRebalance.bind(portfolioController));
 

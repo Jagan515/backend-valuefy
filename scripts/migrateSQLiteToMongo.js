@@ -118,7 +118,7 @@ const migrateData = async () => {
     if (mongoModelPortfolio.length > 0) await ModelPortfolio.insertMany(mongoModelPortfolio);
     console.log(`✅ Migrated ${mongoModelPortfolio.length} rows to 'modelPortfolio' collection.`);
 
-    console.log('\n🎉 All Data Migration Completed Successfully!\n');
+    console.log('\n All Data Migration Completed Successfully!\n');
 
   } catch (error) {
     console.error('❌ Migration failed:', error);

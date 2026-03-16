@@ -6,7 +6,7 @@ class PortfolioRepository {
    * @returns {Promise<Array>}
    */
   async getAllClients() {
-    return await Client.find({});
+    return await Client.find({}).lean();
   }
 
   /**
@@ -15,7 +15,7 @@ class PortfolioRepository {
    * @returns {Promise<Array>}
    */
   async getClientHoldings(clientId) {
-    return await Holding.find({ clientId });
+    return await Holding.find({ clientId }).lean();
   }
 
   /**
@@ -23,7 +23,7 @@ class PortfolioRepository {
    * @returns {Promise<Array>}
    */
   async getModelPortfolio() {
-    return await ModelPortfolio.find({});
+    return await ModelPortfolio.find({}).lean();
   }
 }
 
